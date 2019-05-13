@@ -167,7 +167,7 @@ void SSD1306_begin() {
 		0x40,  				// Set Display Start Line
 		0xA1,  				// Set Segment re-map (SEG0 starts at 127, so the left)
 		0xC8,  				// Set COM Output Scan Direction (0 -> 63)
-		0xDA, 0b10,  	// Set COM Pins hardware config
+		0xDA, 0b00010010,  	// Set COM Pins hardware config
 		0x81, 0x7F, 	// Set Contrast Control, higher -> brighter
 		0xA4,  				// Disable Entire Display On
 		0xA6,  				// Set Normal Display
