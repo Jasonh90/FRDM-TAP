@@ -1,9 +1,9 @@
 Sunday
-- Getting arrows to 64
+- Getting arrows to 64 (done)
 
 Monday
-- Getting 4 arrows
-- Game screen ready (starting w outline)
+- Getting 4 arrows (done)
+- Game screen ready (starting w outline) 
 - Moving arrows up (timer for score)
 - Buttons interaction with board
 	- Make arrow set to null when buttons pressed
