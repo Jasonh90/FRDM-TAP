@@ -1,1 +1,1 @@
-# Tap Tap Revenge - The FReeDoM
+# Tap Tap Revenge - FReeDoM
