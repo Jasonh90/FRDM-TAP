@@ -2,6 +2,9 @@
 
 > Inspired by [TFT Board Connection through SPI to FRDM](https://confluence.cornell.edu/pages/viewpage.action?pageId=357447003) && [DDR](https://www.youtube.com/watch?v=sv7gxqEhcBo)
 
+## Timeline
+---
+
 ### Sunday
 - ~~Getting arrows to 64~~
 
@@ -9,9 +12,9 @@
 - ~~Getting 4 arrows~~
 - Game screen ready (starting w outline) 
 - Moving arrows up (timer for score)
-__- Buttons interaction with board
+- Buttons interaction with board
 	- Make arrow set to null when buttons pressed
-	- Interrupt__
+	- Interrupt
 
 ### Tuesday
 - Finish up on Monday
