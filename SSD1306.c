@@ -1,7 +1,7 @@
 #include "SSD1306.h"
 #include <fsl_device_registers.h>
-#include "milliseconds.h"
 #include "data.h"
+#include "milliseconds.h"
 
 /* Lower Level Function */
 
@@ -115,7 +115,7 @@ static void write_command(uint8_t cmd) {
   set_high(SSD1306_DC);
 }
 
-// Send a command and data
+// Send multiple commands
 static void send_commands(uint32_t data_len, uint8_t* data) {
   for (uint32_t i = 0; i < data_len; i++) {
     write_command(data[i]);
@@ -133,7 +133,6 @@ static void setAddrWindow(int c1, int c2, int p1, int p2, uint8_t dir) {
 		0x22, p1, p2,		// Set Page Address
 	});
 }
-
 
 static void clear_screen(){
 	setAddrWindow(0, 127, 0, 7, 0);
@@ -185,16 +184,54 @@ void SSD1306_begin() {
 // NOTE: WHEN THINGS SHOW UP TOP LEFT CORNER AS ORIGIN, 
 // THE THINGS ARE UPSIDE DOWN. SO, 0b00100000 is really 0b00000100.
 
-void SSD1306_HELLO(int c1, int c2, int p1, int p2) {
+void draw(int size, uint8_t* figure){
+	for(int i = 0; i < size; i++){
+		write(figure[i]);
+	}
+}
+void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t frequency){
+	uint8_t scroll;
+	if(is_right)
+		scroll = 0x26; // right
+	else 
+		scroll = 0x27; // left
+	
+	send_commands(9, (uint8_t []) {
+		0x2E,						// Deactivate scroll to avoid corrupting RAM
+		scroll, 				// Direction 
+		0x00, 					// Dummy
+		page_Start, 		// Page Start
+		frequency, 			// Time interval (frequency)
+		page_End, 			// Page End
+		0x00, 					// Dummy
+		0xFF,						// Dummy
+		0x2F,						// Activate scroll
+	});
+}
+
+void SSD1306_draw(int c1, int c2, int p1, int p2, int size, uint8_t* figure) {
   open();
 	
-  setAddrWindow(c1, c2, p1, p2, 0);
-	for(int j = 0; j < sizeof(hello); j++){
-		write(hello[j]);
-		delay(100);
-	}
+  setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
 	
+	draw(size, figure);
+	//Scroll_Setup(1,0,1,7);
   close();
+}
+
+void SSD1306_play(){
+	open();
+	setAddrWindow(0, 15, 0, 7, 0);
+	draw(32, arrow_up);
+	draw(32, arrow_left);
+	draw(32, arrow_right);
+	draw(32, arrow_down);
+	Scroll_Setup(1,3,1,7);
+	close();
+}
+
+void Scroll_Stop(void){
+	write_command(0x2E);
 }
 
 /* End Exposed SSD1306 Functions */
