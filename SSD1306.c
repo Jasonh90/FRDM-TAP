@@ -184,11 +184,19 @@ void SSD1306_begin() {
 // NOTE: WHEN THINGS SHOW UP TOP LEFT CORNER AS ORIGIN, 
 // THE THINGS ARE UPSIDE DOWN. SO, 0b00100000 is really 0b00000100.
 
-void draw(int size, uint8_t* figure){
+void draw(int size, const uint8_t* figure){
 	for(int i = 0; i < size; i++){
 		write(figure[i]);
 	}
 }
+
+void draw_animate(int size, const uint8_t* figure){
+	for(int i = 0; i < size; i++){
+		write(figure[i]);
+		delay(100);
+	}
+}
+
 void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t frequency){
 	uint8_t scroll;
 	if(is_right)
@@ -209,7 +217,7 @@ void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t fr
 	});
 }
 
-void SSD1306_draw(int c1, int c2, int p1, int p2, int size, uint8_t* figure) {
+void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figure) {
   open();
 	
   setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
@@ -226,8 +234,21 @@ void SSD1306_play(){
 	draw(32, arrow_left);
 	draw(32, arrow_right);
 	draw(32, arrow_down);
-	Scroll_Setup(1,3,1,7);
+	Scroll_Setup(1,0,7,0);
 	close();
+}
+
+void SSD1306_welcome(){
+	open();
+	
+  setAddrWindow(44, 84, 3, 3, 0); // Horizontal Addressing Mode
+	
+	draw_animate(40, welcome);
+	delay(1000);
+	clear_screen();
+	delay(1000);
+	
+  close();
 }
 
 void Scroll_Stop(void){

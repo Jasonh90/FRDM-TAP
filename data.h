@@ -2,8 +2,8 @@
 
  typedef struct {
 	 const uint8_t *data;
-	 uint16_t width;
-	 uint16_t height;
+	 //uint16_t width;
+	 //uint16_t height;
 	 uint8_t dataSize;
 } tImage;
 
@@ -19,7 +19,8 @@ const uint8_t martinez[150] = {
 	0x07, 0x07, 0x07, 0x07, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x02,
 	0x02, 0x02, 0x00, 0x00, 0x00, 0x02
 };
-uint8_t arrow_left[] = {
+
+const uint8_t arrow_left[] = {
 	// top half
 	0b00000000, 0b00000000, 0b10000000, 0b01000000, 
 	0b00100000, 0b00010000, 0b00001000, 0b00000100, 
@@ -33,7 +34,7 @@ uint8_t arrow_left[] = {
 	0b00000001, 0b00000001, 0b00000001, 0b00000001,
 };
 
-uint8_t arrow_right[] = {
+const uint8_t arrow_right[] = {
 	// top half
 	0b00000000, 0b00000000, 0b00000000, 0b00000000, 
 	0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -46,7 +47,7 @@ uint8_t arrow_right[] = {
 	0b00000101, 0b00000011, 0b00000001, 0b00000000, 
 };
 
-uint8_t arrow_up[] = {
+const uint8_t arrow_up[] = {
 	// top half
 	0b00000000, 0b10000000, 0b01000000, 0b00100000, 
 	0b00010000, 0b00001000, 0b00000100, 0b11111110, 
@@ -60,7 +61,7 @@ uint8_t arrow_up[] = {
 	0b00000000, 0b00000000, 0b00000000, 0b00000000,
 };
 
-uint8_t arrow_down[] = {
+const uint8_t arrow_down[] = {
 	// top half
 	0b00000000, 0b00000000, 0b00000000, 0b00000000,
 	0b00000000, 0b00000000, 0b00000000, 0b11111111,
@@ -73,12 +74,11 @@ uint8_t arrow_down[] = {
 	0b00100000, 0b00010000, 0b00001000, 0b00000100, 
 	0b00000010, 0b00000001, 0b00000000, 0b00000000,
 };
-		
-const uint8_t hello[40] = {
+
+const uint8_t welcome[] = {
 	0xff, 0x08, 0x08, 0x08, 0x08, 0xff, 0x00, 0x00, 
 	0xff, 0x89, 0x89, 0x89, 0x89, 0x89, 0x00, 0x00, 
 	0xff, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00, 0x00, 
 	0xff, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00, 0x00, 
 	0xff, 0x81, 0x81, 0x81, 0x81, 0xff, 0x00, 0x00,
-	
 };

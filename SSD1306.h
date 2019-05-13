@@ -21,9 +21,10 @@
 
 void SSD1306_begin(void);
 uint8_t SSD1306_read_command(uint8_t command);
-void SSD1306_draw(int c1, int c2, int p1, int p2, int size, uint8_t* figure);
+void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figure);
 void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t frequency);
 void Scroll_Stop(void);
 void SSD1306_play(void);
+void SSD1306_welcome(void);
 
 #endif

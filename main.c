@@ -7,6 +7,7 @@ int main() {
   SSD1306_begin();
 
   delay(1000);
+	//SSD1306_welcome();
 
   //SSD1306_draw(112, 127, 0, 1, 32, arrow_up); 
 	//SSD1306_draw(112, 127, 2, 3, 32, arrow_left); 
