@@ -21,6 +21,6 @@
 
 void SSD1306_begin(void);
 uint8_t SSD1306_read_command(uint8_t command);
-void SSD1306_fill_screen(int c1, int c2, int p1, int p2);
+void SSD1306_HELLO(int c1, int c2, int p1, int p2);
 
 #endif

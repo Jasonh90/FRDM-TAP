@@ -8,7 +8,7 @@ int main() {
 
   delay(1000);
 
-  SSD1306_fill_screen(0, 127, 0, 7); // full
-	
+  SSD1306_HELLO(0, 127, 0, 7); 
+	SSD1306_HELLO(0, 127, 4, 7); 
 	return 0;
 }

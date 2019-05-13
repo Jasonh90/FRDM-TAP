@@ -185,7 +185,7 @@ void SSD1306_begin() {
 // NOTE: WHEN THINGS SHOW UP TOP LEFT CORNER AS ORIGIN, 
 // THE THINGS ARE UPSIDE DOWN. SO, 0b00100000 is really 0b00000100.
 
-void SSD1306_fill_screen(int c1, int c2, int p1, int p2) {
+void SSD1306_HELLO(int c1, int c2, int p1, int p2) {
   open();
 	
   setAddrWindow(c1, c2, p1, p2, 0);
