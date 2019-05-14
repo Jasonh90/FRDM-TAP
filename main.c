@@ -29,8 +29,8 @@ void LEDRed_On (void) {
     __disable_irq();
     
     PTB->PCOR   = 1 << 22;   /* Red LED On*/
-    PTB->PSOR   = 1 << 21;   /* Blue LED Off*/
-    PTE->PSOR   = 1 << 26;   /* Green LED Off*/
+    //PTB->PSOR   = 1 << 21;   /* Blue LED Off*/
+    //PTE->PSOR   = 1 << 26;   /* Green LED Off*/
     
     // Restore interrupts
     __set_PRIMASK(m);
@@ -42,9 +42,9 @@ void LED_Off (void) {
     m = __get_PRIMASK();
     __disable_irq();
     
-    PTB->PSOR   = 1 << 22;   /* Green LED Off*/
+    //PTB->PSOR   = 1 << 22;   /* Green LED Off*/
     PTB->PSOR   = 1 << 21;   /* Red LED Off*/
-    PTE->PSOR   = 1 << 26;   /* Blue LED Off*/
+    //PTE->PSOR   = 1 << 26;   /* Blue LED Off*/
     
     // Restore interrupts
     __set_PRIMASK(m);
@@ -60,7 +60,7 @@ int main() {
     /* Push-button test */
     led_setup();
     GPIO_setup();
-    LEDRed_On();
+    //LEDRed_On();
     
     while(1) {
         if (PTC->PDIR == (0u << 3)) {            // Switch pressed
