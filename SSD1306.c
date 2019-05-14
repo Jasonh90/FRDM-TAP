@@ -93,7 +93,7 @@ static void write(uint8_t value) {
 }
 */
 
-
+/*
 // Write 2 bytes of data
 static inline void write16(uint16_t value) {
   write((value >> 8) & 0xFF);
@@ -107,7 +107,7 @@ static inline void write32(uint32_t value) {
   write((value >> 8) & 0xFF);
   write((value >> 0) & 0xFF);
 }
-
+*/
 // Write a command
 static void write_command(uint8_t cmd) {
   set_low(SSD1306_DC);
@@ -120,6 +120,19 @@ static void send_commands(uint32_t data_len, uint8_t* data) {
   for (uint32_t i = 0; i < data_len; i++) {
     write_command(data[i]);
   }
+}
+
+void draw(int size, const uint8_t* figure){
+	for(int i = 0; i < size; i++){
+		write(figure[i]);
+	}
+}
+
+void draw_animate(int size, const uint8_t* figure){
+	for(int i = 0; i < size; i++){
+		write(figure[i]);
+		delay(100);
+	}
 }
 
 /* End SPI Helper Functions */
@@ -137,6 +150,13 @@ static void setAddrWindow(int c1, int c2, int p1, int p2, uint8_t dir) {
 static void clear_screen(){
 	setAddrWindow(0, 127, 0, 7, 0);
 	for(int j = 0; j < 1024; j++){
+		write(0x00);
+	}
+}
+
+static void clear_page(int page){
+	setAddrWindow(0, 127, page, page, 0);
+	for(int j = 0; j < 128; j++){
 		write(0x00);
 	}
 }
@@ -184,19 +204,6 @@ void SSD1306_begin() {
 // NOTE: WHEN THINGS SHOW UP TOP LEFT CORNER AS ORIGIN, 
 // THE THINGS ARE UPSIDE DOWN. SO, 0b00100000 is really 0b00000100.
 
-void draw(int size, const uint8_t* figure){
-	for(int i = 0; i < size; i++){
-		write(figure[i]);
-	}
-}
-
-void draw_animate(int size, const uint8_t* figure){
-	for(int i = 0; i < size; i++){
-		write(figure[i]);
-		delay(100);
-	}
-}
-
 void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t frequency){
 	uint8_t scroll;
 	if(is_right)
@@ -217,42 +224,57 @@ void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t fr
 	});
 }
 
-void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figure) {
-  open();
-	
-  setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
-	
-	draw(size, figure);
-	//Scroll_Setup(1,0,1,7);
-  close();
-}
-
-void SSD1306_play(){
-	open();
-	setAddrWindow(0, 15, 0, 7, 0);
-	draw(32, arrow_up);
-	draw(32, arrow_left);
-	draw(32, arrow_right);
-	draw(32, arrow_down);
-	Scroll_Setup(1,0,7,0);
-	close();
-}
-
-void SSD1306_welcome(){
-	open();
-	
-  setAddrWindow(44, 84, 3, 3, 0); // Horizontal Addressing Mode
-	
-	draw_animate(40, welcome);
-	delay(1000);
-	clear_screen();
-	delay(1000);
-	
-  close();
-}
-
 void Scroll_Stop(void){
 	write_command(0x2E);
 }
 
+void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figure) {
+  open();
+	
+  setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
+	draw(size, figure);
+	Scroll_Setup(1,0,7,0);
+	
+  close();
+}
+
+
+void SSD1306_play(){
+	open();
+	
+	for(int i = 0; i < 4; i++){
+		SSD1306_draw(0, 15, i*2, i*2+1, 32, arrows[i]); 
+		delay(3000);
+	}
+	/*
+	SSD1306_draw(0, 15, 0, 1, 32, arrow_up); 
+	SSD1306_draw(0, 15, 2, 3, 32, arrow_left); 
+  SSD1306_draw(0, 15, 4, 5, 32, arrow_right); 
+	SSD1306_draw(0, 15, 6, 7, 32, arrow_down); 
+	*/
+	close();
+}
+
+void SSD1306_hello(){
+	open();
+	
+  setAddrWindow(44, 84, 3, 3, 0);
+	draw_animate(40, hello);
+	delay(1000);
+	clear_screen();
+	delay(1000);
+	
+	/*setAddrWindow(112, 127, 0, 7, 0);
+	draw(32, arrow_up);
+	draw(32, arrow_left);
+	draw(32, arrow_right);
+	draw(32, arrow_down);
+	write_command(0x2E);
+	delay(5000);*/
+  close();
+}
+
 /* End Exposed SSD1306 Functions */
+
+/* Interrupt Handler */
+
