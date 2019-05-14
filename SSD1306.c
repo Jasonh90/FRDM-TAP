@@ -2,9 +2,9 @@
 #include <fsl_device_registers.h>
 #include "data.h"
 #include "milliseconds.h"
-#include "display.h"
+#include <stdlib.h>
 
-volatile uint8_t col1, col2, pag1, pag2, addrDir;
+volatile int written[4] = {0,0,0,0};
 
 /* Lower Level Function */
 
@@ -69,13 +69,6 @@ static void write(uint8_t value) {
   }
 }
 
-void setGlobals(uint8_t c1, uint8_t c2, uint8_t p1, uint8_t p2, uint8_t dir){
-	col1 = c1;
-	col2 = c2; 
-	pag1 = p1;
-	pag2 = p2;
-	addrDir = dir;
-}
 
 /*
 // Write 2 bytes of data
@@ -123,30 +116,17 @@ void draw_animate(int size, const uint8_t* figure){
 
 /* SSD1306 Protocol Functions */
 
+// Adjust where to write data
 static void setAddrWindow(int c1, int c2, int p1, int p2, uint8_t dir) {
-	setGlobals(c1, c2, p1, p2, dir);
 	send_commands(8, (uint8_t []) {
 		0x20, dir, 			// (dir) Addressing Mode
 		0x21, c1, c2,		// Set Column Address
 		0x22, p1, p2,		// Set Page Address
 	});
 }
-static void setWindowHandler() {
-	send_commands(8, (uint8_t []) {
-		0x20, 0,
-		0x21, 126, 127,
-		0x22, 0, 7,
-	});
-}
 
+// Clears the screen
 static void clear_screen(){
-	setAddrWindow(0, 127, 0, 7, 0);
-	for(int j = 0; j < 1024; j++){
-		write(0x00);
-	}
-}
-
-static void clear_edges(int c1, int c2){
 	setAddrWindow(0, 127, 0, 7, 0);
 	for(int j = 0; j < 1024; j++){
 		write(0x00);
@@ -158,6 +138,7 @@ static void clear_edges(int c1, int c2){
 
 /* Exposed SSD1306 Functions */
 
+// Initializes the OLED
 void SSD1306_begin() {
   // Enable ports B D
   SIM->SCGC5 |= (0xF <<  10);
@@ -189,7 +170,7 @@ void SSD1306_begin() {
   clear_screen();
 	
   delay(120);
-	
+
   close();
 }
 
@@ -225,22 +206,35 @@ void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figur
 	
   setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
 	draw(size, figure);
-	Scroll_Setup(1,0,7,0);
+	//Scroll_Setup(1,0,7,0);
 	
   close();
 }
 
-
 void SSD1306_play(){
 	open();
-	// Enable Interrupt
-  PIT->CHANNEL[1].TCTRL = 0x3;
-	for(int i = 0; i < arrows_size; i++){
-		SSD1306_draw(0, 15, i*2, i*2+1, 32, arrows[i]); 
+	int r = rand() % 4;
+	uint8_t c1, c2, p;
+	while(1){
+		// if one of the positions are written, 
+		// then keep generating random int
+		while(written[r]){ 
+			r = rand() % 4;
+		}
+		if(r == 1){
+			c1 = 56; c2 = 72; p = 1;
+		} else if(r == 2){
+			c1 = 24; c2 = 40; p = 3;
+		} else if(r == 3){
+			c1 = 88; c2 = 104; p = 3;
+		} else {
+			c1 = 56; c2 = 72; p = 5;
+		}
+		SSD1306_draw(c1, c2, p, p+1, 32, arrows[r]); 
+		written[r] = 1;
 		delay(3000);
 	}
-	setAddrWindow(44, 84, 3, 3, 0);
-	SSD1306_draw(112, 127, 3, 4, 32, arrow_down);
+	
 	/*
 	SSD1306_draw(0, 15, 0, 1, 32, arrow_up); 
 	SSD1306_draw(0, 15, 2, 3, 32, arrow_left); 
@@ -259,6 +253,8 @@ void SSD1306_hello(){
 	delay(1000);
 	clear_screen();
 	delay(1000);
+	//setAddrWindow(50, 78, 3, 4, 0);
+	//draw(150, martinez);
 	
 	/*setAddrWindow(112, 127, 0, 7, 0);
 	draw(32, arrow_up);

@@ -5,8 +5,10 @@
 
 void GPIO_setup(void) {
     SIM->SCGC5 = SIM_SCGC5_PORTC_MASK;        // enable clock to port C
-    PORTC->PCR[12] = PORT_PCR_MUX(001);      // enable PTC12 as GPIO
+    PORTC->PCR[3] = PORT_PCR_MUX(001);      // enable PTC12 as GPIO
     PTC->PDDR = (0u << 3);                   // enable PTC12 as INPUT
+		PORTC->PCR[3] |= PORT_PCR_PE_MASK;
+		PORTC->PCR[3] &= ~PORT_PCR_PS_MASK;
 }
 
 
@@ -29,8 +31,8 @@ void LEDRed_On (void) {
     __disable_irq();
     
     PTB->PCOR   = 1 << 22;   /* Red LED On*/
-    PTB->PSOR   = 1 << 21;   /* Blue LED Off*/
-    PTE->PSOR   = 1 << 26;   /* Green LED Off*/
+    //PTB->PSOR   = 1 << 21;   /* Blue LED Off*/
+    //PTE->PSOR   = 1 << 26;   /* Green LED Off*/
     
     // Restore interrupts
     __set_PRIMASK(m);
@@ -42,9 +44,9 @@ void LED_Off (void) {
     m = __get_PRIMASK();
     __disable_irq();
     
-    PTB->PSOR   = 1 << 22;   /* Green LED Off*/
+    //PTB->PSOR   = 1 << 22;   /* Green LED Off*/
     PTB->PSOR   = 1 << 21;   /* Red LED Off*/
-    PTE->PSOR   = 1 << 26;   /* Blue LED Off*/
+    //PTE->PSOR   = 1 << 26;   /* Blue LED Off*/
     
     // Restore interrupts
     __set_PRIMASK(m);
@@ -56,9 +58,21 @@ int main() {
     
     delay(1000);
     SSD1306_hello();
+	
+    /* Push-button test */	/*
+    led_setup();
+    GPIO_setup();
+    //LEDRed_On();
     
-    
-    
+    while(1) {
+        if (PTC->PDIR == (0u << 3)) {            // Switch pressed
+            LEDRed_On();
+        }
+        else if (PTC->PDIR == (1u << 3)) {        // Swtich not pressed
+            LED_Off();
+        }
+    }
+    */
     SSD1306_play();
     
     //Scroll_Setup(1, 0, 1, 7);
@@ -66,15 +80,3 @@ int main() {
 }
 
 
-/* From Rohan Anand online forum */
-//void InitLED(void)
-//
-//{
-//
-//    SIM->SCGC5=SIM_SCGC5_PORTD_MASK;//Clock to PortD
-//
-//    PORTD->PCR[5]=256;//PIN 5 of portd as GPIO
-//
-//    PTD->PDDR=(1u<<5);//PIN 5 of portd as OUTPUT
-//
-//}

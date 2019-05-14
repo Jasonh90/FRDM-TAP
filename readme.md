@@ -1,4 +1,4 @@
-# Push Tap Revenge - FReeDoM
+# FReeDoM React
 
 > Inspired by [TFT Board Connection through SPI to FRDM](https://confluence.cornell.edu/pages/viewpage.action?pageId=357447003) && [DDR](https://www.youtube.com/watch?v=sv7gxqEhcBo)
 
@@ -9,16 +9,16 @@
 
 ### Monday
 - ~~Getting 4 arrows~~
-- Game screen ready (starting w outline) 
-- Moving arrows up (timer for score)
+- Four arrows pop up.
+- martinez in middle. 
+- Maybe display rules first? 
+- buttons working correctly.
+
+### Tuesday
 - Buttons interaction with board
 	- Make arrow set to null when buttons pressed
 	- Interrupt
-
-### Tuesday
-- Finish up on Monday
 - DMA (research and start to implement) -> go OH if necessary
-- Finalize rules
 
 ### Wednesday
 - Finish up from Tuesday
