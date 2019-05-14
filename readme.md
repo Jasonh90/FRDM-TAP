@@ -9,15 +9,19 @@
 
 ### Monday
 - ~~Getting 4 arrows~~
-- Four arrows pop up.
-- martinez in middle. 
-- Maybe display rules first? 
-- buttons working correctly.
+- ~~Four arrows pop up.~~
+- ~~martinez in middle.~~
 
 ### Tuesday
+- Maybe display rules first? 
+- Display ending. Figure out how to get words without manually doing it. byte arrays. 
+- buttons working correctly.
 - Buttons interaction with board
 	- Make arrow set to null when buttons pressed
-	- Interrupt
+	- Interrupt 
+		- increase score, display accordingly? (excellent, good, bad, miss)
+		- multiple interrupts or one interrupt handling four buttons? 
+		- score depends on how fast you react.  REACTION_TIME / written\[i\]
 - DMA (research and start to implement) -> go OH if necessary
 
 ### Wednesday
