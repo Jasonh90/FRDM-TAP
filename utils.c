@@ -108,7 +108,7 @@ void LED_Off (void) {
 	__set_PRIMASK(m);
 }
 
-void delay(void){
+void delay_utils(void){
 	int j;
 	for(j=0; j<1000000; j++);
 }

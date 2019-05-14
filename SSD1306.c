@@ -112,7 +112,7 @@ void draw(int size, const uint8_t* figure){
 void draw_animate(int size, const uint8_t* figure){
 	for(int i = 0; i < size; i++){
 		write(figure[i]);
-		delay(100);
+		delay(75);
 	}
 }
 

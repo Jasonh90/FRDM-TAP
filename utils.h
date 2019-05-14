@@ -9,7 +9,7 @@ void LEDRed_On (void);
 void LEDGreen_On (void);
 void LEDBlue_On (void);
 void LED_Off (void);
-void delay (void);
+void delay_utils (void);
 
 #endif
 

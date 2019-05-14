@@ -7,39 +7,32 @@
 
 
 void GPIO_setup(void) {
-    SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;        // enable clock to port C
-    PORTC->PCR[3] &= ~PORT_PCR_MUX(111);
-    PORTC->PCR[3] = PORT_PCR_MUX(001);      // enable PTC12 as GPIO
-    //PTC->PDDR = (0u << 3);                   // enable PTC12 as INPUT
-    PTC->PDDR &= ~GPIO_PDDR_PDD(0 << 4);
+	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;        // enable clock to port C
+	PORTC->PCR[3] &= ~PORT_PCR_MUX(111);
+	PORTC->PCR[3] = PORT_PCR_MUX(001);      	 // enable PTC3 as GPIO
+	PTC->PDDR = (0u << 3);                   // enable PTC3 as INPUT
+	//PTC->PDDR &= ~GPIO_PDDR_PDD(0 << 4);
 
 	PORTC->PCR[3] |= PORT_PCR_PE_MASK;
 	PORTC->PCR[3] &= ~PORT_PCR_PS_MASK;
+	PORTC->PCR[3] |= PORT_PCR_IRQC(1001);
+	NVIC_EnableIRQ(PORTC_IRQn);
+	
 }
 
 
 int main() {
-    setup_timer();
-    SSD1306_begin();
-
-    delay(1000);
-
-    SSD1306_hello();
-
-    /* Push-button test */
+		/* Push-button Setup */
     LED_Initialize();
     GPIO_setup();
-    //LEDRed_On();
-
-    while(1) {
-        if (PTC->PDIR == (0u << 3)) {            // Switch pressed
-            LEDRed_On();
-        }
-        else if (PTC->PDIR == (1u << 3)) {        // Swtich not pressed
-            LED_Off();
-        }
-    }
-
+	
+    setup_timer();
+    SSD1306_begin();
+		delay(1000);
+		
+    SSD1306_hello();
+		
+    while(1);
 
     SSD1306_play();
 
@@ -47,3 +40,10 @@ int main() {
     //Scroll_Setup(1, 0, 1, 7);
     return 0;
 }
+/*
+void PORTC_IRQHandler(){
+	PORTC->PCR[3] |= (1 << 24);
+	LEDRed_Toggle();	
+
+}
+*/
