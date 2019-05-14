@@ -88,3 +88,4 @@ const uint8_t hello[] = {
 const uint8_t* arrows[] = {
 	arrow_up, arrow_left, arrow_right, arrow_down,
 };
+int arrows_size = 4;

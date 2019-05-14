@@ -57,26 +57,6 @@ int main() {
     delay(1000);
     SSD1306_hello();
     
-    /* Push-button test */
-    led_setup();
-    GPIO_setup();
-    LEDRed_On();
-    
-    while(1) {
-        if (PTC->PDIR == (0u << 3)) {            // Switch pressed
-            LEDRed_On();
-        }
-        else if (PTC->PDIR == (1u << 3)) {        // Swtich not pressed
-            LED_Off();
-        }
-    }
-    
-    
-    //    while(1) {
-    //        if (PTC->PDIR == (0u << 3)) {             // Switch is pressed
-    //            LEDRed_Toggle();
-    //        }
-    //    }
     
     
     SSD1306_play();

@@ -189,22 +189,6 @@ void SSD1306_begin() {
   clear_screen();
 	
   delay(120);
-
-	// Initialize PIT timer
-  SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
-  PIT->MCR = 0x0;
-
-  // If the timer is already enabled, turn it off first
-  if (PIT->CHANNEL[1].TCTRL == 0x3) {
-    PIT->CHANNEL[1].TCTRL = 0x1;
-  }
-
-  // 20970 cycles per millisecond
-  PIT->CHANNEL[1].LDVAL = 536832; // get a value for the frequency of scroll
-
-	
-	/* enable PIT1 Interrupts */
-	NVIC_EnableIRQ(PIT1_IRQn); 
 	
   close();
 }
@@ -251,10 +235,12 @@ void SSD1306_play(){
 	open();
 	// Enable Interrupt
   PIT->CHANNEL[1].TCTRL = 0x3;
-	for(int i = 0; i < 4; i++){
+	for(int i = 0; i < arrows_size; i++){
 		SSD1306_draw(0, 15, i*2, i*2+1, 32, arrows[i]); 
 		delay(3000);
 	}
+	setAddrWindow(44, 84, 3, 3, 0);
+	SSD1306_draw(112, 127, 3, 4, 32, arrow_down);
 	/*
 	SSD1306_draw(0, 15, 0, 1, 32, arrow_up); 
 	SSD1306_draw(0, 15, 2, 3, 32, arrow_left); 
@@ -285,19 +271,3 @@ void SSD1306_hello(){
 }
 
 /* End Exposed SSD1306 Functions */
-
-/* Interrupt Handler to erase arrows on the right */
-
-void PIT1_IRQHandler(void) {
-  // Clear
-  PIT->CHANNEL[1].TFLG |= 1;
-  // Disable
-  PIT->CHANNEL[1].TCTRL &= ~3;
-  
-	Scroll_Stop();
-	delay(10000);
-
-	
-	// Enable
-  PIT->CHANNEL[1].TCTRL |= 3;
-}
