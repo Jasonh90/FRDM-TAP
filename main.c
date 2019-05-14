@@ -7,7 +7,7 @@ int main() {
   SSD1306_begin();
 
   delay(1000);
-	SSD1306_hello();
+	//SSD1306_hello();
 
 	
 	

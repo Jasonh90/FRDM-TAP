@@ -2,6 +2,9 @@
 #include <fsl_device_registers.h>
 #include "data.h"
 #include "milliseconds.h"
+#include "display.h"
+
+volatile uint8_t col1, col2, pag1, pag2, addrDir;
 
 /* Lower Level Function */
 
@@ -66,32 +69,13 @@ static void write(uint8_t value) {
   }
 }
 
-/* original
-static void write(uint8_t value) {
-  for (uint8_t bit = 0x80; bit > 0; bit >>= 1) {
-    if ((value & bit) == bit) {
-      set_high(SSD1306_MOSI);
-    }
-    else {
-      set_low(SSD1306_MOSI);
-    }
-    set_low(SSD1306_CLK);
-    set_high(SSD1306_CLK);
-  }
+void setGlobals(uint8_t c1, uint8_t c2, uint8_t p1, uint8_t p2, uint8_t dir){
+	col1 = c1;
+	col2 = c2; 
+	pag1 = p1;
+	pag2 = p2;
+	addrDir = dir;
 }
-
-// mine
-static void write(uint8_t value) {
-  for (uint8_t bit = 0x80; bit > 0; bit >>= 1) {
-    if (value & bit) {
-      set_high(SSD1306_MOSI);
-    }
-    set_low(SSD1306_CLK);
-    set_high(SSD1306_CLK);
-		set_low(SSD1306_MOSI);
-  }
-}
-*/
 
 /*
 // Write 2 bytes of data
@@ -140,10 +124,18 @@ void draw_animate(int size, const uint8_t* figure){
 /* SSD1306 Protocol Functions */
 
 static void setAddrWindow(int c1, int c2, int p1, int p2, uint8_t dir) {
+	setGlobals(c1, c2, p1, p2, dir);
 	send_commands(8, (uint8_t []) {
 		0x20, dir, 			// (dir) Addressing Mode
 		0x21, c1, c2,		// Set Column Address
 		0x22, p1, p2,		// Set Page Address
+	});
+}
+static void setWindowHandler() {
+	send_commands(8, (uint8_t []) {
+		0x20, 0,
+		0x21, 126, 127,
+		0x22, 0, 7,
 	});
 }
 
@@ -154,9 +146,9 @@ static void clear_screen(){
 	}
 }
 
-static void clear_page(int page){
-	setAddrWindow(0, 127, page, page, 0);
-	for(int j = 0; j < 128; j++){
+static void clear_edges(int c1, int c2){
+	setAddrWindow(0, 127, 0, 7, 0);
+	for(int j = 0; j < 1024; j++){
 		write(0x00);
 	}
 }
@@ -198,6 +190,22 @@ void SSD1306_begin() {
 	
   delay(120);
 
+	// Initialize PIT timer
+  SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
+  PIT->MCR = 0x0;
+
+  // If the timer is already enabled, turn it off first
+  if (PIT->CHANNEL[1].TCTRL == 0x3) {
+    PIT->CHANNEL[1].TCTRL = 0x1;
+  }
+
+  // 20970 cycles per millisecond
+  PIT->CHANNEL[1].LDVAL = 536832; // get a value for the frequency of scroll
+
+	
+	/* enable PIT1 Interrupts */
+	NVIC_EnableIRQ(PIT1_IRQn); 
+	
   close();
 }
 
@@ -241,7 +249,8 @@ void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figur
 
 void SSD1306_play(){
 	open();
-	
+	// Enable Interrupt
+  PIT->CHANNEL[1].TCTRL = 0x3;
 	for(int i = 0; i < 4; i++){
 		SSD1306_draw(0, 15, i*2, i*2+1, 32, arrows[i]); 
 		delay(3000);
@@ -257,6 +266,7 @@ void SSD1306_play(){
 
 void SSD1306_hello(){
 	open();
+	
 	
   setAddrWindow(44, 84, 3, 3, 0);
 	draw_animate(40, hello);
@@ -276,5 +286,18 @@ void SSD1306_hello(){
 
 /* End Exposed SSD1306 Functions */
 
-/* Interrupt Handler */
+/* Interrupt Handler to erase arrows on the right */
 
+void PIT1_IRQHandler(void) {
+  // Clear
+  PIT->CHANNEL[1].TFLG |= 1;
+  // Disable
+  PIT->CHANNEL[1].TCTRL &= ~3;
+  
+	Scroll_Stop();
+	delay(10000);
+
+	
+	// Enable
+  PIT->CHANNEL[1].TCTRL |= 3;
+}
