@@ -3,8 +3,6 @@
 #include "milliseconds.h"
 
 
-
-
 void GPIO_setup(void) {
     SIM->SCGC5 = SIM_SCGC5_PORTC_MASK;        // enable clock to port C
     PORTC->PCR[12] = PORT_PCR_MUX(001);      // enable PTC12 as GPIO
@@ -38,6 +36,55 @@ void LEDRed_On (void) {
     __set_PRIMASK(m);
 }
 
+void LED_Off (void) {
+    // Save and disable interrupts (for atomic LED change)
+    uint32_t m;
+    m = __get_PRIMASK();
+    __disable_irq();
+    
+    PTB->PSOR   = 1 << 22;   /* Green LED Off*/
+    PTB->PSOR   = 1 << 21;   /* Red LED Off*/
+    PTE->PSOR   = 1 << 26;   /* Blue LED Off*/
+    
+    // Restore interrupts
+    __set_PRIMASK(m);
+}
+
+int main() {
+    setup_timer();
+    SSD1306_begin();
+    
+    delay(1000);
+    SSD1306_hello();
+    
+    /* Push-button test */
+    led_setup();
+    GPIO_setup();
+    LEDRed_On();
+    
+    while(1) {
+        if (PTC->PDIR == (0u << 3)) {            // Switch pressed
+            LEDRed_On();
+        }
+        else if (PTC->PDIR == (1u << 3)) {        // Swtich not pressed
+            LED_Off();
+        }
+    }
+    
+    
+    //    while(1) {
+    //        if (PTC->PDIR == (0u << 3)) {             // Switch is pressed
+    //            LEDRed_Toggle();
+    //        }
+    //    }
+    
+    
+    SSD1306_play();
+    
+    //Scroll_Setup(1, 0, 1, 7);
+    return 0;
+}
+
 
 /* From Rohan Anand online forum */
 //void InitLED(void)
@@ -51,27 +98,3 @@ void LEDRed_On (void) {
 //    PTD->PDDR=(1u<<5);//PIN 5 of portd as OUTPUT
 //
 //}
-int main() {
-  setup_timer();
-  SSD1306_begin();
-
-  delay(1000);
-	//SSD1306_hello();
-
-    /* Push-button test */
-    led_setup();
-    GPIO_setup();
-    LEDRed_On();
-    
-    while(1) {
-        if (PTC->PDIR == (0u << 3)) {             // Switch is pressed
-            LEDRed_Toggle();
-        }
-    }
-    
-	
-	SSD1306_play();
-	
-	//Scroll_Setup(1, 0, 1, 7); 
-	return 0;
-}
