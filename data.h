@@ -20,10 +20,6 @@ const uint8_t martinez[150] = {
 	0x02, 0x02, 0x00, 0x00, 0x00, 0x02
 };
 
-const uint8_t lines[] = {
-	0x10,
-};
-
 const uint8_t arrow_left[] = {
 	// top half
 	0b00000000, 0b00000000, 0b10000000, 0b01000000, 
@@ -101,8 +97,6 @@ const uint8_t white[] = {
 const uint8_t* arrows[] = {
 	arrow_up, arrow_left, arrow_right, arrow_down,
 };
-
-int arrows_size = 4;
 
 const uint8_t WINNER[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 

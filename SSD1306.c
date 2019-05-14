@@ -154,12 +154,28 @@ static void displayFlash(int i){
 
 /* End SSD1306 Protocol Function */
 
+/* Button Helper Functions */
+
+// Enable all the interrupts for the buttons
+static void interrupts_enable(){
+	//PORTA->PCR[2] |= PORT_PCR_IRQC(1001);
+	//NVIC_EnableIRQ(PORTA_IRQn);
+	
+	//PORTB->PCR[3] |= PORT_PCR_IRQC(1001);
+	//NVIC_EnableIRQ(PORTB_IRQn);
+	
+
+	
+	//PORTD->PCR[3] |= PORT_PCR_IRQC(1001);
+	//NVIC_EnableIRQ(PORTD_IRQn);
+}
+
+/* End Button Helper Functions */
 
 /* Exposed SSD1306 Functions */
 
 // Initializes the OLED
 void SSD1306_begin() {
-  // Enable ports B D
   SIM->SCGC5 |= (0xF <<  10);
 
   set_output(SSD1306_CLK);
@@ -192,13 +208,12 @@ void SSD1306_begin() {
 	written[2] = 0;
 	written[3] = 0;
 	SCORE = 0;
+	interrupts_enable();
+
   delay(120);
 
   close();
 }
-
-// NOTE: WHEN THINGS SHOW UP TOP LEFT CORNER AS ORIGIN, 
-// THE THINGS ARE UPSIDE DOWN. SO, 0b00100000 is really 0b00000100.
 
 void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t frequency){
 	uint8_t scroll;
@@ -229,7 +244,6 @@ void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figur
 	
   setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
 	draw(size, figure);
-	//Scroll_Setup(1,0,7,0);
 	
   close();
 }
@@ -254,19 +268,13 @@ void SSD1306_play(){
 		} else {
 			c1 = 56; c2 = 72; p = 5;
 		}
-		int i = rand() % 4; // Can be used to randomize the arrows. 
+		//int i = rand() % 4; // Can be used to randomize the arrows. 
 		// So, top can be a left. right can be a down
 		SSD1306_draw(c1, c2, p, p+1, 32, arrows[r]); 
 		written[r] = get_milliseconds();
 		delay(rand() % 3000);
 	}
 	
-	/*
-	SSD1306_draw(0, 15, 0, 1, 32, arrow_up); 
-	SSD1306_draw(0, 15, 2, 3, 32, arrow_left); 
-  SSD1306_draw(0, 15, 4, 5, 32, arrow_right); 
-	SSD1306_draw(0, 15, 6, 7, 32, arrow_down); 
-	*/
 	close();
 }
 
@@ -278,8 +286,10 @@ void SSD1306_hello(){
 	delay(1000);
 	displayClear();
 	delay(1000);
-	//setAddrWindow(50, 78, 3, 4, 0);
-	//draw(150, martinez);
+	//setAddrWindow(0, 127, 7, 7, 0);
+	//write(0x10);
+	//setAddrWindow(0, 127, 0, 0, 0);
+	//write(0x08);
 	
   close();
 }
@@ -308,22 +318,3 @@ void SSD1306_done(){
 /* Interrupt Handlers for Push Buttons */
 
 // Not sure how to call this... but lets make it first.
-void Button1_Handler(){
-	// ensure what port this goes to. correlate it with the direction 
-	
-	// Pretend this is the up button. 
-	
-	// Check if the first thing in written has something
-	// If it is non-zero, then the arrow has been popped up.
-	if(written[0]){
-		uint64_t current_time = get_milliseconds();
-		uint64_t tmp = current_time - written[0];
-		if(tmp < 5000)
-			SCORE += 5000 - tmp;
-		
-		written[0] = 0;
-	}
-	
-	
-}
-
