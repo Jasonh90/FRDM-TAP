@@ -17,7 +17,7 @@
 #endif
 #ifndef SSD1306_RST
 #	define SSD1306_RST PORTB, PTB, 23
-#endif
+#endif 
 
 void SSD1306_begin(void);
 uint8_t SSD1306_read_command(uint8_t command);
@@ -26,5 +26,6 @@ void Scroll_Setup(int is_right, uint8_t page_Start, uint8_t page_End, uint8_t fr
 void Scroll_Stop(void);
 void SSD1306_play(void);
 void SSD1306_hello(void);
+void SSD1306_done(void);
 
 #endif

@@ -4,9 +4,11 @@
 #include "milliseconds.h"
 #include <stdlib.h>
 
-volatile int written[4];
-volatile int timer;
-const int REACTION_TIME = 1000; // 1 sec
+volatile uint64_t written[4];  											// arrows written on screen
+volatile uint64_t SCORE; 														// score of player
+const int REACTION_TIME = 5000;											// 5 sec
+const uint64_t GAME_TIME = REACTION_TIME * 12;			// overall game time (1 min)
+const uint64_t WINNING_SCORE = GAME_TIME * 3 / 4; 	// You win by reacting 75%
 
 /* Lower Level Function */
 
@@ -128,11 +130,26 @@ static void setAddrWindow(int c1, int c2, int p1, int p2, uint8_t dir) {
 }
 
 // Clears the screen
-static void clear_screen(){
+static void displayClear(){
 	setAddrWindow(0, 127, 0, 7, 0);
 	for(int j = 0; j < 1024; j++){
 		write(0x00);
 	}
+}
+
+static void displayInverse(){
+	write_command(0xA7);
+}
+
+static void displayNormal(){
+	write_command(0xA6);
+}
+
+static void displayFlash(int i){
+	displayInverse();
+	delay(i);
+	displayNormal();
+	delay(i);
 }
 
 /* End SSD1306 Protocol Function */
@@ -169,11 +186,12 @@ void SSD1306_begin() {
 		0x8D, 0x14,  	// Enable charge pump regulator
 		0xAF, 				// Display on 
 	});
-  clear_screen();
+  displayClear();
 	written[0] = 0;
 	written[1] = 0;
 	written[2] = 0;
 	written[3] = 0;
+	SCORE = 0;
   delay(120);
 
   close();
@@ -220,8 +238,8 @@ void SSD1306_play(){
 	open();
 	int r = rand() % 4;
 	uint8_t c1, c2, p;
-	timer = get_milliseconds();
-	while(get_milliseconds() - timer < 60000){ // one minute
+	uint64_t timer = get_milliseconds();
+	while(get_milliseconds() - timer < GAME_TIME){ // one minute
 		// if one of the positions are written, 
 		// then keep generating random int
 		while(written[r]){ 
@@ -239,7 +257,7 @@ void SSD1306_play(){
 		int i = rand() % 4; // Can be used to randomize the arrows. 
 		// So, top can be a left. right can be a down
 		SSD1306_draw(c1, c2, p, p+1, 32, arrows[r]); 
-		written[r] = REACTION_TIME;
+		written[r] = get_milliseconds();
 		delay(rand() % 3000);
 	}
 	
@@ -258,7 +276,7 @@ void SSD1306_hello(){
   setAddrWindow(44, 84, 3, 3, 0);
 	draw_animate(40, hello);
 	delay(1000);
-	clear_screen();
+	displayClear();
 	delay(1000);
 	//setAddrWindow(50, 78, 3, 4, 0);
 	//draw(150, martinez);
@@ -266,8 +284,46 @@ void SSD1306_hello(){
   close();
 }
 
+
 void SSD1306_done(){
 	//print out the end display. 
+	// Flash the screen a bit
+	for(int i = 1; i > 5 ; i++){
+		displayFlash(1000/i);
+	}
+	displayClear(); // Clear Screen
+	setAddrWindow(0, 127, 0, 7, 0); // Full Screen
+	if(SCORE >= WINNING_SCORE){
+		draw(1024, WINNER);
+	} else {
+		draw(1024, LOSER);
+	}
+	while(1){ // Flash indefinitely
+		displayFlash(1000);
+	}
 }
 
 /* End Exposed SSD1306 Functions */
+
+/* Interrupt Handlers for Push Buttons */
+
+// Not sure how to call this... but lets make it first.
+void Button1_Handler(){
+	// ensure what port this goes to. correlate it with the direction 
+	
+	// Pretend this is the up button. 
+	
+	// Check if the first thing in written has something
+	// If it is non-zero, then the arrow has been popped up.
+	if(written[0]){
+		uint64_t current_time = get_milliseconds();
+		uint64_t tmp = current_time - written[0];
+		if(tmp < 5000)
+			SCORE += 5000 - tmp;
+		
+		written[0] = 0;
+	}
+	
+	
+}
+
