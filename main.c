@@ -75,6 +75,7 @@ int main() {
     */
     SSD1306_play();
     
+		SSD1306_done();
     //Scroll_Setup(1, 0, 1, 7);
     return 0;
 }

@@ -4,7 +4,9 @@
 #include "milliseconds.h"
 #include <stdlib.h>
 
-volatile int written[4] = {0,0,0,0};
+volatile int written[4];
+volatile int timer;
+const int REACTION_TIME = 1000; // 1 sec
 
 /* Lower Level Function */
 
@@ -168,7 +170,10 @@ void SSD1306_begin() {
 		0xAF, 				// Display on 
 	});
   clear_screen();
-	
+	written[0] = 0;
+	written[1] = 0;
+	written[2] = 0;
+	written[3] = 0;
   delay(120);
 
   close();
@@ -215,24 +220,27 @@ void SSD1306_play(){
 	open();
 	int r = rand() % 4;
 	uint8_t c1, c2, p;
-	while(1){
+	timer = get_milliseconds();
+	while(get_milliseconds() - timer < 60000){ // one minute
 		// if one of the positions are written, 
 		// then keep generating random int
 		while(written[r]){ 
 			r = rand() % 4;
 		}
-		if(r == 1){
+		if(r == 0){
 			c1 = 56; c2 = 72; p = 1;
-		} else if(r == 2){
+		} else if(r == 1){
 			c1 = 24; c2 = 40; p = 3;
-		} else if(r == 3){
+		} else if(r == 2){
 			c1 = 88; c2 = 104; p = 3;
 		} else {
 			c1 = 56; c2 = 72; p = 5;
 		}
+		int i = rand() % 4; // Can be used to randomize the arrows. 
+		// So, top can be a left. right can be a down
 		SSD1306_draw(c1, c2, p, p+1, 32, arrows[r]); 
-		written[r] = 1;
-		delay(3000);
+		written[r] = REACTION_TIME;
+		delay(rand() % 3000);
 	}
 	
 	/*
@@ -247,7 +255,6 @@ void SSD1306_play(){
 void SSD1306_hello(){
 	open();
 	
-	
   setAddrWindow(44, 84, 3, 3, 0);
 	draw_animate(40, hello);
 	delay(1000);
@@ -256,14 +263,11 @@ void SSD1306_hello(){
 	//setAddrWindow(50, 78, 3, 4, 0);
 	//draw(150, martinez);
 	
-	/*setAddrWindow(112, 127, 0, 7, 0);
-	draw(32, arrow_up);
-	draw(32, arrow_left);
-	draw(32, arrow_right);
-	draw(32, arrow_down);
-	write_command(0x2E);
-	delay(5000);*/
   close();
+}
+
+void SSD1306_done(){
+	//print out the end display. 
 }
 
 /* End Exposed SSD1306 Functions */
