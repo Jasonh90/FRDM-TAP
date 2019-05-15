@@ -4,11 +4,13 @@
 #include "milliseconds.h"
 #include <stdlib.h>
 
+/* Global Variables for the Game */
+
 volatile uint64_t written[4];  											// arrows written on screen
 volatile uint64_t SCORE; 														// score of player
-const int REACTION_TIME = 5000;											// 5 sec
-const uint64_t GAME_TIME = REACTION_TIME * 12;			// overall game time (1 min)
-const uint64_t WINNING_SCORE = GAME_TIME * 3 / 4; 	// You win by reacting 75%
+const int REACTION_TIME = 1000;											// 1 sec
+const uint64_t GAME_TIME = 30000;										// overall game time (30 secs)
+const uint64_t WINNING_SCORE = GAME_TIME * 1 / 4; 	// You win by reacting 75%
 
 /* Lower Level Function */
 
@@ -29,9 +31,6 @@ static inline void set_high(PORT_Type* port, GPIO_Type* gpio, uint8_t pin) {
 static inline void set_low(PORT_Type* port, GPIO_Type* gpio, uint8_t pin) {
   gpio->PCOR |= 1 << pin;
 }
-
-/* End Lower Level Functions */
-
 
 /* Operational Functions */
 
@@ -55,9 +54,6 @@ static void reset() {
   set_high(SSD1306_RST);
   delay(1000);
 }
-
-/* End Operational Functions */
-
 
 /* SPI Helper Functions */
 
@@ -116,8 +112,6 @@ void draw_animate(int size, const uint8_t* figure){
 	}
 }
 
-/* End SPI Helper Functions */
-
 /* SSD1306 Protocol Functions */
 
 // Adjust where to write data
@@ -133,6 +127,14 @@ static void setAddrWindow(int c1, int c2, int p1, int p2, uint8_t dir) {
 static void displayClear(){
 	setAddrWindow(0, 127, 0, 7, 0);
 	for(int j = 0; j < 1024; j++){
+		write(0x00);
+	}
+}
+
+// Clears the screen with given columns and pages
+static void displayClearCustom(int c1, int c2, int p1, int p2, int n){
+	setAddrWindow(c1, c2, p1, p2, 0);
+	for(int j = 0; j < n; j++){
 		write(0x00);
 	}
 }
@@ -242,8 +244,10 @@ void Scroll_Stop(void){
 void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figure) {
   open();
 	
+	Scroll_Stop();
   setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
 	draw(size, figure);
+	Scroll_Setup(1, 7, 8, 0); // Left scroll
 	
   close();
 }
@@ -259,37 +263,31 @@ void SSD1306_play(){
 		while(written[r]){ 
 			r = rand() % 4;
 		}
-		if(r == 0){
-			c1 = 56; c2 = 72; p = 1;
-		} else if(r == 1){
-			c1 = 24; c2 = 40; p = 3;
-		} else if(r == 2){
-			c1 = 88; c2 = 104; p = 3;
-		} else {
-			c1 = 56; c2 = 72; p = 5;
+		if(r == UP){
+			SSD1306_draw(UP_COORDS, 32, arrow_up); 
+		} else if(r == LEFT){
+			SSD1306_draw(LEFT_COORDS, 32, arrow_left); 
+		} else if(r == RIGHT){
+			SSD1306_draw(RIGHT_COORDS, 32, arrow_right); 
+		} else if(r == DOWN){
+			SSD1306_draw(DOWN_COORDS, 32, arrow_down); 
 		}
-		//int i = rand() % 4; // Can be used to randomize the arrows. 
-		// So, top can be a left. right can be a down
-		SSD1306_draw(c1, c2, p, p+1, 32, arrows[r]); 
 		written[r] = get_milliseconds();
 		delay(rand() % 3000);
 	}
-	
 	close();
 }
 
 void SSD1306_hello(){
 	open();
 	
-  setAddrWindow(44, 84, 3, 3, 0);
-	draw_animate(40, hello);
-	delay(1000);
-	displayClear();
-	delay(1000);
-	//setAddrWindow(0, 127, 7, 7, 0);
-	//write(0x10);
-	//setAddrWindow(0, 127, 0, 0, 0);
-	//write(0x08);
+  //setAddrWindow(44, 84, 3, 3, 0);
+	//draw_animate(40, hello);
+	//delay(1000);
+	//displayClear();
+	//delay(1000);
+	SSD1306_draw(0, 127, 0, 0, 128, upper_dots);
+	SSD1306_draw(0, 127, 7, 7, 128, lower_dots);
 	
   close();
 }
@@ -313,8 +311,35 @@ void SSD1306_done(){
 	}
 }
 
+uint64_t SSD1306_get_Score(){
+	return SCORE;
+}
+
+uint64_t SSD1306_get_Reaction_Time(){
+	return REACTION_TIME;
+}
+
+void SSD1306_update_Score(uint64_t i){
+	SCORE += i;
+}
+
+uint64_t SSD1306_get_Arrow_Start_Time(int i){
+	return written[i];
+}
+
+void SSD1306_clear_arrow(int i){
+	written[i] = 0; // reset_Arrow_Start_Time
+	
+	if(i == UP){
+		SSD1306_draw(UP_COORDS, 32, arrow_erase); 
+	} else if(i == LEFT){
+		SSD1306_draw(LEFT_COORDS, 32, arrow_erase); 
+	} else if(i == RIGHT){
+		SSD1306_draw(RIGHT_COORDS, 32, arrow_erase); 
+	} else if(i == DOWN){
+		SSD1306_draw(DOWN_COORDS, 32, arrow_erase); 
+	}
+}
+
+
 /* End Exposed SSD1306 Functions */
-
-/* Interrupt Handlers for Push Buttons */
-
-// Not sure how to call this... but lets make it first.
