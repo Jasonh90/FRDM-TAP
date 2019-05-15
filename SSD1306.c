@@ -296,7 +296,7 @@ void SSD1306_hello(){
 
 
 void SSD1306_done(){
-	//print out the end display. 
+	// print out the end display. 
 	// Flash the screen a bit
 	for(int i = 1; i > 5 ; i++){
 		displayFlash(1000/i);
