@@ -21,16 +21,16 @@
 		- ~~score depends on how fast you react.  REACTION_TIME / written\[i\]~~
 
 ### Wednesday
-- Maybe display rules first? 
-- Make arrow set to null when buttons pressed
-- increase score, display accordingly? (excellent, good, bad, miss)
-- Report
+- ~~Maybe display rules first?~~
+- ~~Make arrow set to null when buttons pressed~~
+- ~~increase score, display accordingly? (excellent, good, bad, miss)~~
+- ~~Report~~
 - ~~Final message & score & Martinéz face~~
+
+### Thursday
 - DMA (research and start to implement) -> go OH if necessary
 	- DAC, PWM, just a prolonged sound
 - Match up with music (chorus/beat)
-
-### Thursday
 - Finish up as necessary :)
-- Video
+- Video (Main Focus)
 - Report
