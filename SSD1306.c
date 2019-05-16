@@ -131,14 +131,6 @@ static void displayClear(){
 	}
 }
 
-// Clears the screen with given columns and pages
-static void displayClearCustom(int c1, int c2, int p1, int p2, int n){
-	setAddrWindow(c1, c2, p1, p2, 0);
-	for(int j = 0; j < n; j++){
-		write(0x00);
-	}
-}
-
 static void displayInverse(){
 	write_command(0xA7);
 }
@@ -153,26 +145,6 @@ static void displayFlash(int i){
 	displayNormal();
 	delay(i);
 }
-
-/* End SSD1306 Protocol Function */
-
-/* Button Helper Functions */
-
-// Enable all the interrupts for the buttons
-static void interrupts_enable(){
-	//PORTA->PCR[2] |= PORT_PCR_IRQC(1001);
-	//NVIC_EnableIRQ(PORTA_IRQn);
-	
-	//PORTB->PCR[3] |= PORT_PCR_IRQC(1001);
-	//NVIC_EnableIRQ(PORTB_IRQn);
-	
-
-	
-	//PORTD->PCR[3] |= PORT_PCR_IRQC(1001);
-	//NVIC_EnableIRQ(PORTD_IRQn);
-}
-
-/* End Button Helper Functions */
 
 /* Exposed SSD1306 Functions */
 
@@ -210,7 +182,6 @@ void SSD1306_begin() {
 	written[2] = 0;
 	written[3] = 0;
 	SCORE = 0;
-	interrupts_enable();
 
   delay(120);
 
@@ -252,24 +223,41 @@ void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figur
   close();
 }
 
+void SSD1306_draw_matrix4(int c1, int c2, int p1, int p2, int size, const uint8_t* figure[]){
+  open();
+	
+	Scroll_Stop();
+  setAddrWindow(c1, c2, p1, p2, 0); // Horizontal Addressing Mode
+	for(int i = 0; i < 4; i++){
+		draw(size, figure[i]);
+	}
+	Scroll_Setup(1, 7, 8, 0); // Left scroll
+	
+  close();
+}
+
 void SSD1306_play(){
 	open();
 	int r = rand() % 4;
-	uint8_t c1, c2, p;
-	uint64_t timer = get_milliseconds();
-	while(get_milliseconds() - timer < GAME_TIME){ // one minute
+	uint64_t start_time = get_milliseconds();
+	while(get_milliseconds() - start_time < GAME_TIME){ 
 		// if one of the positions are written, 
 		// then keep generating random int
-		while(written[r]){ 
+		// or when time is up.
+		while(written[r] && get_milliseconds() - start_time < GAME_TIME){ 
 			r = rand() % 4;
 		}
 		if(r == UP){
+			SSD1306_draw(50, 127, 1, 1, 32, arrow_erase); 
 			SSD1306_draw(UP_COORDS, 32, arrow_up); 
 		} else if(r == LEFT){
+			SSD1306_draw(18, 127, 3, 3, 32, arrow_erase); 
 			SSD1306_draw(LEFT_COORDS, 32, arrow_left); 
 		} else if(r == RIGHT){
+			SSD1306_draw(82, 127, 3, 3, 32, arrow_erase); 
 			SSD1306_draw(RIGHT_COORDS, 32, arrow_right); 
 		} else if(r == DOWN){
+			SSD1306_draw(50, 127, 5, 5, 32, arrow_erase); 
 			SSD1306_draw(DOWN_COORDS, 32, arrow_down); 
 		}
 		written[r] = get_milliseconds();
@@ -278,14 +266,30 @@ void SSD1306_play(){
 	close();
 }
 
-void SSD1306_hello(){
+void SSD1306_intro(){
 	open();
-	
-  //setAddrWindow(44, 84, 3, 3, 0);
-	//draw_animate(40, hello);
-	//delay(1000);
-	//displayClear();
-	//delay(1000);
+
+  setAddrWindow(44, 84, 3, 3, 0);
+	draw_animate(40, hello);
+	delay(1000);
+	displayClear();
+	delay(1000);
+  setAddrWindow(0, 127, 0, 7, 0);
+	draw(1024, are_you_ready);
+	displayFlash(1000);
+	displayFlash(500);
+	displayFlash(300);
+	displayFlash(200);
+	displayFlash(100);
+	for(int i = 0; i < 3; i++){
+		setAddrWindow(0, 127, 0, 7, 0);
+		draw(1024, three_two_one[i]);
+		Scroll_Setup(1,0,7,0b111);
+		delay(1000);
+		Scroll_Stop();
+	}
+	displayClear(); // Clear Screen
+
 	SSD1306_draw(0, 127, 0, 0, 128, upper_dots);
 	SSD1306_draw(0, 127, 7, 7, 128, lower_dots);
 	
@@ -294,21 +298,32 @@ void SSD1306_hello(){
 
 
 void SSD1306_done(){
+	open();
+	
 	// print out the end display. 
 	// Flash the screen a bit
-	for(int i = 1; i > 5 ; i++){
-		displayFlash(1000/i);
-	}
 	displayClear(); // Clear Screen
 	setAddrWindow(0, 127, 0, 7, 0); // Full Screen
+	Scroll_Stop();
 	if(SCORE >= WINNING_SCORE){
 		draw(1024, WINNER);
 	} else {
 		draw(1024, LOSER);
 	}
-	while(1){ // Flash indefinitely
-		displayFlash(1000);
+	int i = 5;
+	while(i-- > 0){ // Flash 
+		displayFlash(1000/i);
 	}
+	setAddrWindow(0, 127, 0, 7, 0);
+	draw(1024, martinez);
+	while(1){
+		Scroll_Setup(1,0,7,0b111);
+		delay(1300);
+		Scroll_Setup(0,0,7,0b111);
+		delay(1300);
+	};
+	
+	close();
 }
 
 uint64_t SSD1306_get_Score(){
@@ -327,19 +342,43 @@ uint64_t SSD1306_get_Arrow_Start_Time(int i){
 	return written[i];
 }
 
-void SSD1306_clear_arrow(int i){
-	written[i] = 0; // reset_Arrow_Start_Time
+void SSD1306_clear_arrow(int loc, uint64_t time){
+	open();
 	
-	if(i == UP){
+	// Select window frame depending on [loc]
+	int c1, p1;
+	if(loc == UP){
+		c1 = 50; p1 = 1;
+	} else if(loc == LEFT){
+		c1 = 18; p1 = 3;
+	} else if(loc == RIGHT){
+		c1 = 82; p1 = 3;
+	} else if(loc == DOWN){
+		c1 = 50; p1 = 5; 
+	}
+	
+	// Erase the arrow first
+		if(loc == UP){
 		SSD1306_draw(UP_COORDS, 32, arrow_erase); 
-	} else if(i == LEFT){
+	} else if(loc == LEFT){
 		SSD1306_draw(LEFT_COORDS, 32, arrow_erase); 
-	} else if(i == RIGHT){
+	} else if(loc == RIGHT){
 		SSD1306_draw(RIGHT_COORDS, 32, arrow_erase); 
-	} else if(i == DOWN){
+	} else if(loc == DOWN){
 		SSD1306_draw(DOWN_COORDS, 32, arrow_erase); 
 	}
+	
+	// Then, Display how good player did.
+	if(time < REACTION_TIME / 2){ // WOW!
+		SSD1306_draw_matrix4(c1, 127, p1, p1, 8, wow); 
+	} else if(time < REACTION_TIME * 3 / 4){ // GOOD
+		SSD1306_draw_matrix4(c1, 127, p1, p1, 8, good); 
+	} else if(time <= REACTION_TIME){ // LATE
+		SSD1306_draw_matrix4(c1, 127, p1, p1, 8, late); 
+	} else if(time > REACTION_TIME){ // MISS
+		SSD1306_draw_matrix4(c1, 127, p1, p1, 8, miss); 
+	}
+	
+	written[loc] = 0; // clear arrow from array
+	close();
 }
-
-
-/* End Exposed SSD1306 Functions */

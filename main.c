@@ -5,12 +5,10 @@
 #include "utils.h"
 
 void GPIO_setup(PORT_Type* port, GPIO_Type* gpio, int i) {
-	
 	port->PCR[i] &= ~PORT_PCR_MUX(111);
-	port->PCR[i] = PORT_PCR_MUX(001);      	 // enable as GPIO
-	gpio->PDDR = (0u << 3);                   // enable as INPUT
-	port->PCR[i] |= PORT_PCR_IRQC(1001);
-	
+	port->PCR[i] = PORT_PCR_MUX(001);      	// enable as GPIO
+	gpio->PDDR = (0u << 3);                 // enable as INPUT
+	port->PCR[i] |= PORT_PCR_IRQC(1001);		// activate IRQ as rising edge detection
 }
 
 int main() {
@@ -31,10 +29,10 @@ int main() {
 
 	delay(1000);
 	
-	SSD1306_hello();
+	SSD1306_intro();
 	
 	// Play the game
-	SSD1306_play();
+	//SSD1306_play();
 	
 	NVIC_DisableIRQ(PORTC_IRQn);	// Disable buttons
 
@@ -43,31 +41,42 @@ int main() {
 }
 
 /* Interrupt Handlers for Push Buttons */
+
+void __interrupt_helper(int i){
+	uint64_t start_time = SSD1306_get_Arrow_Start_Time(i);
+	if(start_time){
+		uint64_t react_time_observed = get_milliseconds() - start_time;
+		uint64_t react_time_actual = SSD1306_get_Reaction_Time();
+		if(react_time_observed < react_time_actual){
+			SSD1306_update_Score(react_time_actual - react_time_observed);
+		}
+		SSD1306_clear_arrow(i, react_time_observed);
+	}
+}
+
 void PORTC_IRQHandler(){
 	if(PORTC->ISFR & (1 << 2)){ // UP 
 		PORTC->PCR[2] |= (1 << 24); // Clear Flag
 		LEDRed_Toggle();
 		// Check if the first thing in written has something
 		// If it is non-zero, then the arrow has been popped up.
-		uint64_t up = SSD1306_get_Arrow_Start_Time(0);
-		if(up){
-			uint64_t tmp = get_milliseconds() - up;
-			if(tmp < 5000){
-				SSD1306_update_Score(SSD1306_get_Reaction_Time() - tmp);
-			}
-			SSD1306_clear_arrow(UP);
-		}
+		__interrupt_helper(UP);
 		
 	} else if(PORTC->ISFR & (1 << 3)){ // LEFT
 		PORTC->PCR[3] |= (1 << 24); // Clear Flag
 		LEDGreen_Toggle();
+		__interrupt_helper(LEFT);
+		
 	} else if(PORTC->ISFR & (1 << 4)){ // RIGHT
 		PORTC->PCR[4] |= (1 << 24); // Clear Flag
 		LEDBlue_Toggle();
+		__interrupt_helper(RIGHT);
+		
 	} else if(PORTC->ISFR & (1 << 12)){ // DOWN
 		PORTC->PCR[12] |= (1 << 24); // Clear Flag
 		LEDRed_Toggle();
 		LEDBlue_Toggle();
+		__interrupt_helper(DOWN);
 	}
 }
 

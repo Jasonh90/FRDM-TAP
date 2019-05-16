@@ -42,12 +42,12 @@
 void SSD1306_begin(void);
 void SSD1306_draw(int c1, int c2, int p1, int p2, int size, const uint8_t* figure);
 void SSD1306_play(void);
-void SSD1306_hello(void);
+void SSD1306_intro(void);
 void SSD1306_done(void);
 uint64_t SSD1306_get_Score(void);
 void SSD1306_update_Score(uint64_t i);
 uint64_t SSD1306_get_Reaction_Time(void);
 uint64_t SSD1306_get_Arrow_Start_Time(int i);
-void SSD1306_clear_arrow(int i);
+void SSD1306_clear_arrow(int i, uint64_t time);
 
 #endif
