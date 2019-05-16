@@ -12,7 +12,7 @@ const int REACTION_TIME = 1000;											// 1 sec
 const uint64_t GAME_TIME = 30000;										// overall game time (30 secs)
 const uint64_t EASY = GAME_TIME / 4;	
 const uint64_t HARD = GAME_TIME * 3 / 8;	
-const uint64_t WINNING_SCORE = EASY; 	// You win by reacting 75%
+const uint64_t WINNING_SCORE = EASY; 								// The score you need to win.
 
 /* Lower Level Function */
 
@@ -71,22 +71,6 @@ static void write(uint8_t value) {
   }
 }
 
-
-/*
-// Write 2 bytes of data
-static inline void write16(uint16_t value) {
-  write((value >> 8) & 0xFF);
-  write((value >> 0) & 0xFF);
-}
-
-// Write 4 bytes of data
-static inline void write32(uint32_t value) {
-  write((value >> 24) & 0xFF);
-  write((value >> 16) & 0xFF);
-  write((value >> 8) & 0xFF);
-  write((value >> 0) & 0xFF);
-}
-*/
 // Write a command
 static void write_command(uint8_t cmd) {
   set_low(SSD1306_DC);
@@ -133,18 +117,10 @@ static void displayClear(){
 	}
 }
 
-static void displayInverse(){
-	write_command(0xA7);
-}
-
-static void displayNormal(){
-	write_command(0xA6);
-}
-
 static void displayFlash(int i){
-	displayInverse();
+	write_command(0xA7);
 	delay(i);
-	displayNormal();
+	write_command(0xA6);
 	delay(i);
 }
 
