@@ -32,7 +32,7 @@ int main() {
 	SSD1306_intro();
 	
 	// Play the game
-	//SSD1306_play();
+	SSD1306_play();
 	
 	NVIC_DisableIRQ(PORTC_IRQn);	// Disable buttons
 

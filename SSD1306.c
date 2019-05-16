@@ -10,7 +10,9 @@ volatile uint64_t written[4];  											// arrows written on screen
 volatile uint64_t SCORE; 														// score of player
 const int REACTION_TIME = 1000;											// 1 sec
 const uint64_t GAME_TIME = 30000;										// overall game time (30 secs)
-const uint64_t WINNING_SCORE = GAME_TIME * 1 / 4; 	// You win by reacting 75%
+const uint64_t EASY = GAME_TIME / 4;	
+const uint64_t HARD = GAME_TIME * 3 / 8;	
+const uint64_t WINNING_SCORE = EASY; 	// You win by reacting 75%
 
 /* Lower Level Function */
 
@@ -238,12 +240,12 @@ void SSD1306_draw_matrix4(int c1, int c2, int p1, int p2, int size, const uint8_
 
 void SSD1306_play(){
 	open();
-	int r = rand() % 4;
 	uint64_t start_time = get_milliseconds();
 	while(get_milliseconds() - start_time < GAME_TIME){ 
 		// if one of the positions are written, 
 		// then keep generating random int
 		// or when time is up.
+		int r = rand() % 4;
 		while(written[r] && get_milliseconds() - start_time < GAME_TIME){ 
 			r = rand() % 4;
 		}
@@ -310,7 +312,7 @@ void SSD1306_done(){
 	} else {
 		draw(1024, LOSER);
 	}
-	int i = 5;
+	int i = 10;
 	while(i-- > 0){ // Flash 
 		displayFlash(1000/i);
 	}
